@@ -84,6 +84,7 @@ def predict_outcomes(df, background_df=None, model_path="model.joblib"):
     individual did not have a child during 2021-2023, while '1' implies that
     they did.
 
+    
     Parameters:
     df (pd.DataFrame): The input dataframe for which predictions are to be made.
     background_df (pd.DataFrame): The background dataframe for which predictions are to be made.
