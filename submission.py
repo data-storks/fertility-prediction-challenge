@@ -17,14 +17,19 @@ run.py can be used to test your submission.
 
 # List your libraries and modules here. Don't forget to update environment.yml!
 import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+
 import joblib
 
 
 def clean_df(df, background_df=None):
     """
+
     Preprocess the input dataframe to feed the model.
-    # If no cleaning is done (e.g. if all the cleaning is done in a pipeline) leave only the "return df" command
+
 
     Parameters:
     df (pd.DataFrame): The input dataframe containing the raw data (e.g., from PreFer_train_data.csv or PreFer_fake_data.csv).
@@ -32,6 +37,20 @@ def clean_df(df, background_df=None):
 
     Returns:
     pd.DataFrame: The cleaned dataframe with only the necessary columns and processed variables.
+    y_missing = df['outcome_available'] == 0
+
+    ##drop NAs
+    df = df.drop(df[y_missing].index, axis='rows')
+
+    # Selecting variables for modelling
+   keepcols = ["nomem_encr","cf20m004","cf20m024","cf20m128"]
+
+    df = df[keepcols]
+
+    ## subset dataframe 
+    df = df[keepcols]
+
+    return df
     """
 
     ## This script contains a bare minimum working example
@@ -72,12 +91,9 @@ def predict_outcomes(df, background_df=None, model_path="model.joblib"):
 
     Returns:
     pd.DataFrame: A dataframe containing the identifiers and their corresponding predictions.
-    """
-
-    ## This script contains a bare minimum working example
     if "nomem_encr" not in df.columns:
         print("The identifier variable 'nomem_encr' should be in the dataset")
-
+    """
     # Load the model
     model = joblib.load(model_path)
 
@@ -97,3 +113,7 @@ def predict_outcomes(df, background_df=None, model_path="model.joblib"):
 
     # Return only dataset with predictions and identifier
     return df_predict
+
+
+
+
