@@ -17,18 +17,22 @@ def train_save_model(cleaned_df, outcome_df):
     cleaned_df (pd.DataFrame): The cleaned data from clean_df function to be used for training the model.
     outcome_df (pd.DataFrame): The data with the outcome variable (e.g., from PreFer_train_outcome.csv or PreFer_fake_outcome.csv).
     """
-    
-    categorical_preprocessor = OneHotEncoder(handle_unknown="ignore")
+    # Combine cleaned_df and outcome_df
+    model_df = pd.merge(cleaned_df, outcome_df, on="nomem_encr")
 
-    # split dataset
-    X_train, X_test, y_train, y_test = train_test_split(
-        cleaned_df, outcome_df['new_child'], test_size=0.30, random_state=42)
+    # Filter cases for whom the outcome is not available
+    model_df = model_df[~model_df['new_child'].isna()]  
+    
+    features = ["cf20m004","cf20m024","cf20m128","cf20m130"]
+
+    # preprocessor
+    categorical_preprocessor = OneHotEncoder(handle_unknown="ignore")
 
     # make pipeline
     model = make_pipeline(categorical_preprocessor, LogisticRegression(max_iter=500))
     
     # fit the model
-    model.fit(X_train, y_train)
+    model.fit(model_df[features], model_df['new_child'])
 
     # Save the model
     joblib.dump(model, "model.joblib")

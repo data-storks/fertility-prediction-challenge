@@ -24,12 +24,10 @@ from sklearn.pipeline import make_pipeline
 
 import joblib
 
-
 def clean_df(df, background_df=None):
+    
     """
-
     Preprocess the input dataframe to feed the model.
-
 
     Parameters:
     df (pd.DataFrame): The input dataframe containing the raw data (e.g., from PreFer_train_data.csv or PreFer_fake_data.csv).
@@ -39,38 +37,21 @@ def clean_df(df, background_df=None):
     pd.DataFrame: The cleaned dataframe with only the necessary columns and processed variables.
     y_missing = df['outcome_available'] == 0
 
+    """
+    y_missing = df['outcome_available'] == 0
+
     ##drop NAs
     df = df.drop(df[y_missing].index, axis='rows')
 
     # Selecting variables for modelling
-   keepcols = ["nomem_encr","cf20m004","cf20m024","cf20m128"]
-
-    df = df[keepcols]
+    keepcols = ["nomem_encr","cf20m004","cf20m024","cf20m128","cf20m130"]
 
     ## subset dataframe 
     df = df[keepcols]
 
     return df
-    """
 
-    ## This script contains a bare minimum working example
-    # Create new variable with age
-    df["age"] = 2024 - df["birthyear_bg"]
-
-    # Imputing missing values in age with the mean
-    df["age"] = df["age"].fillna(df["age"].mean())
-
-    # Selecting variables for modelling
-    keepcols = [
-        "nomem_encr",  # ID variable required for predictions,
-        "age"          # newly created variable
-    ] 
-
-    # Keeping data with variables selected
-    df = df[keepcols]
-
-    return df
-
+fake = pd.read_csv("PreFer_fake_data.csv")
 
 def predict_outcomes(df, background_df=None, model_path="model.joblib"):
     """Generate predictions using the saved model and the input dataframe.
