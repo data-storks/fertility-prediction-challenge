@@ -8,7 +8,6 @@ It is important to document your training steps here, including seed,
 number of folds, model, et cetera
 
 """
-
 def train_save_model(cleaned_df, outcome_df):
     """
     Trains a model using the cleaned dataframe and saves the model to a file.
@@ -23,16 +22,31 @@ def train_save_model(cleaned_df, outcome_df):
     # Filter cases for whom the outcome is not available
     model_df = model_df[~model_df['new_child'].isna()]  
     
-    features = ["cf20m004","cf20m024","cf20m128","cf20m130"]
+    selected_columns = ["cf20m004","cf20m024","cf20m128","cf20m130"]
 
-    # preprocessor
-    categorical_preprocessor = OneHotEncoder(handle_unknown="ignore")
+    categorical_preprocessor = make_pipeline(
+        SimpleImputer(strategy='most_frequent'),
+        OneHotEncoder(handle_unknown="ignore")
+    )
 
-    # make pipeline
-    model = make_pipeline(categorical_preprocessor, LogisticRegression(max_iter=500))
+    preprocessor = ColumnTransformer([
+        ('one-hot-encoder', categorical_preprocessor, selected_columns)])
+
+    logistic_pipeline = make_pipeline(preprocessor, LogisticRegression(max_iter=1000))
+    
+    ## Append  oversample
+
+    X_oversampled, y_oversampled = resample(model_df[selected_columns][model_df['new_child'] == 1],
+                                        model_df['new_child'][model_df['new_child'] == 1],
+                                        replace = True,
+                                        n_samples = model_df[selected_columns][model_df['new_child'] == 0].shape[0],
+                                        random_state = 2024)
+    X_balanced = pd.concat((model_df[selected_columns][model_df['new_child'] == 0], X_oversampled))
+    y_balanced = pd.concat((model_df['new_child'][model_df['new_child'] == 0], y_oversampled))
+        
     
     # fit the model
-    model.fit(model_df[features], model_df['new_child'])
-
+    logistic_pipeline.fit(X_balanced,y_balanced)
+    
     # Save the model
-    joblib.dump(model, "model.joblib")
+    joblib.dump(logistic_pipeline, "model.joblib")
